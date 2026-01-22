@@ -1,0 +1,14 @@
+﻿<Window x:Class="FreelanceBookkeeper.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Freelance Bookkeeper" Height="250" Width="400"
+        WindowStartupLocation="CenterScreen">
+
+    <StackPanel Margin="30" VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="Selecciona una opció" FontSize="18" FontWeight="Bold" TextAlignment="Center" Margin="0,0,0,20"/>
+
+        <Button Content="Despeses" Width="200" Height="40" Margin="0,0,0,10" Click="OpenExpenseView_Click" />
+        <Button Content="Clients" Width="200" Height="40" Click="OpenCustomerTransactionView_Click" />
+    </StackPanel>
+
+</Window>

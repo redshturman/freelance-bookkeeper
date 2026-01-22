@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using FreelanceBookkeeper.ViewModels;
+using FreelanceBookkeeper.Views;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -9,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FreelanceBookkeeper
+namespace FreelanceBookkeeper.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -20,5 +22,18 @@ namespace FreelanceBookkeeper
         {
             InitializeComponent();
         }
+
+        private void OpenExpenseView_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new ExpenseView();
+            window.Show();
+        }
+
+        private void OpenCustomerTransactionView_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new CustomerTransactionView();
+            window.Show();
+        }
+
     }
 }
