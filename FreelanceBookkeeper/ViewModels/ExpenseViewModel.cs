@@ -9,14 +9,42 @@ namespace FreelanceBookkeeper.ViewModels;
 public class ExpenseViewModel
 {
     public ObservableCollection<Expense> Expenses { get; set; } = new();
+    public ObservableCollection<int> Years { get; } = new();
     public Config config = Config.Load();
-    private readonly List<int> deletedExpenseIds = new();
+    public List<MonthGroup> MonthGroups
+    {
+        get
+        {
+            int months = config.MonthsToShow;
 
+            if (months <= 0 || months > 12)
+                months = 3;
+
+            int groups = 12 / months;
+
+            var result = new List<MonthGroup>();
+
+            for (int i = 1; i <= groups; i++)
+            {
+                int start = (i - 1) * months + 1;
+                int end = start + months - 1;
+
+                result.Add(new MonthGroup
+                {
+                    Group = i,
+                    Display = $"Mesos {start}-{end}"
+                });
+            }
+
+            return result;
+        }
+    }
 
     public ExpenseViewModel()
     {
         config = Config.Load();
         LoadExpenses();
+        LoadYears();
     }
 
     private void LoadExpenses()
@@ -29,6 +57,21 @@ public class ExpenseViewModel
         Expenses.Clear();
         foreach (var e in list)
             Expenses.Add(e);
+    }
+
+    private void LoadYears()
+    {
+        using var db = new AppDbContext();
+
+        Years.Clear();
+
+        foreach (var year in db.Expenses
+                                .Select(e => e.ExpenseDate.Year)
+                                .Distinct()
+                                .OrderByDescending(y => y))
+        {
+            Years.Add(year);
+        }
     }
 
     public void RefreshFilteredExpenses(int? year = null, int? monthGroup = null)
@@ -66,6 +109,24 @@ public class ExpenseViewModel
                  .Distinct()
                  .OrderByDescending(y => y)
                  .ToList();
+    }
+
+    public void FilterByYear(int? year)
+    {
+        using var db = new AppDbContext();
+
+        var query = db.Expenses.AsQueryable();
+
+        if (year.HasValue)
+            query = query.Where(e => e.ExpenseDate.Year == year.Value);
+
+        var list = query
+            .OrderByDescending(e => e.ExpenseDate)
+            .ToList();
+
+        Expenses.Clear();
+        foreach (var e in list)
+            Expenses.Add(e);
     }
 
     public void SaveAll()

@@ -11,13 +11,44 @@ namespace FreelanceBookkeeper.ViewModels
     class CustomerTransactionViewModel
     {
         public ObservableCollection<CustomerTransaction> CustomerTransactions { get; set; } = new();
+        public ObservableCollection<int> Years { get; } = new();
+
         public Config config = Config.Load();
         private List<CustomerTransaction> allTransactions = new();
+        public List<MonthGroup> MonthGroups
+        {
+            get
+            {
+                int months = config.MonthsToShow;
+
+                if (months <= 0 || months > 12)
+                    months = 3;
+
+                int groups = 12 / months;
+
+                var result = new List<MonthGroup>();
+
+                for (int i = 1; i <= groups; i++)
+                {
+                    int start = (i - 1) * months + 1;
+                    int end = start + months - 1;
+
+                    result.Add(new MonthGroup
+                    {
+                        Group = i,
+                        Display = $"Mesos {start}-{end}"
+                    });
+                }
+
+                return result;
+            }
+        }
 
         public CustomerTransactionViewModel()
         {
             config = Config.Load();
             LoadInvoices();
+            LoadYears();
         }
 
         private void LoadInvoices()
@@ -29,23 +60,41 @@ namespace FreelanceBookkeeper.ViewModels
                CustomerTransactions.Add(e);
         }
 
-        public void RefreshFilteredExpenses(int? year = null, int? monthGroup = null)
+        private void LoadYears()
         {
-            var filtered = allTransactions.AsEnumerable();
+            using var db = new AppDbContext();
+
+            Years.Clear();
+
+            foreach (var year in db.CustomerTransactions
+                                    .Select(e => e.InvoiceDate.Year)
+                                    .Distinct()
+                                    .OrderByDescending(y => y))
+            {
+                Years.Add(year);
+            }
+        }
+
+        public void RefreshFilteredCustomerTransactions(int? year = null, int? monthGroup = null)
+        {
+            using var db = new AppDbContext();
+            var query = db.CustomerTransactions.AsQueryable();
 
             if (year.HasValue)
-                filtered = filtered.Where(e => e.InvoiceDate.Year == year.Value);
+                query = query.Where(e => e.InvoiceDate.Year == year.Value);
 
             if (monthGroup.HasValue)
             {
                 int monthsToShow = config.MonthsToShow;
                 int startMonth = 1 + (monthGroup.Value - 1) * monthsToShow;
                 int endMonth = startMonth + monthsToShow - 1;
-                filtered = filtered.Where(e => e.InvoiceDate.Month >= startMonth && e.InvoiceDate.Month <= endMonth);
+                query = query.Where(e => e.InvoiceDate.Month >= startMonth && e.InvoiceDate.Month <= endMonth);
             }
 
+            var list = query.OrderByDescending(e => e.InvoiceDate).ToList();
+
             CustomerTransactions.Clear();
-            foreach (var e in filtered.OrderByDescending(e => e.InvoiceDate))
+            foreach (var e in list)
                 CustomerTransactions.Add(e);
         }
 
@@ -71,6 +120,24 @@ namespace FreelanceBookkeeper.ViewModels
             }
 
             CustomerTransactions.Remove(customerTransaction);
+        }
+
+        public void FilterByYear(int? year)
+        {
+            using var db = new AppDbContext();
+
+            var query = db.CustomerTransactions.AsQueryable();
+
+            if (year.HasValue)
+                query = query.Where(e => e.InvoiceDate.Year == year.Value);
+
+            var list = query
+                .OrderByDescending(e => e.InvoiceDate)
+                .ToList();
+
+            CustomerTransactions.Clear();
+            foreach (var e in list)
+                CustomerTransactions.Add(e);
         }
 
         public void SaveAll()
