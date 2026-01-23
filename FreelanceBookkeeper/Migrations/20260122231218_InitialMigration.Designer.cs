@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FreelanceBookkeeper.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260122190212_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260122231218_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

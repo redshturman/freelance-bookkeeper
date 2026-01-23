@@ -12,6 +12,7 @@ public partial class SettingsView : Window
         InitializeComponent();
         config = Config.Load();
         MonthsTextBox.Text = config.MonthsToShow.ToString();
+        SetWindowSize();
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)
@@ -20,12 +21,20 @@ public partial class SettingsView : Window
         {
             config.MonthsToShow = months;
             config.Save();
-            MessageBox.Show("Configuración guardada");
+            MessageBox.Show("Configuració guardada");
             Close();
         }
         else
         {
-            MessageBox.Show("Introduce un número válido");
+            MessageBox.Show("Introdueix un número vàlid");
         }
+    }
+
+    private void SetWindowSize()
+    {
+        var screen = System.Windows.SystemParameters.WorkArea;
+        this.Width = screen.Width * 0.3;
+        this.Height = screen.Height * 0.4;
+        this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 }

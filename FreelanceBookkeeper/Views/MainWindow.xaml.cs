@@ -21,6 +21,7 @@ namespace FreelanceBookkeeper.Views
         public MainWindow()
         {
             InitializeComponent();
+            SetWindowSize();
         }
 
         private void OpenExpenseView_Click(object sender, RoutedEventArgs e)
@@ -35,5 +36,18 @@ namespace FreelanceBookkeeper.Views
             window.Show();
         }
 
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new SettingsView();
+            window.ShowDialog();
+        }
+
+        private void SetWindowSize()
+        {
+            var screen = System.Windows.SystemParameters.WorkArea;
+            this.Width = screen.Width * 0.3;
+            this.Height = screen.Height * 0.4;
+            this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        }
     }
 }
