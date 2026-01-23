@@ -1,6 +1,7 @@
 ﻿using FreelanceBookkeeper.Data;
 using FreelanceBookkeeper.Models;
 using FreelanceBookkeeper.ViewModels;
+using Microsoft.Win32;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
@@ -56,5 +57,28 @@ public partial class ExpenseView : Window
     {
         vm.SaveAll();
         MessageBox.Show("Cambios guardados en la base de datos");
+    }
+
+    private void ExportButton_Click(object sender, RoutedEventArgs e)
+    {
+        var saveFileDialog = new SaveFileDialog
+        {
+            Filter = "Excel Files|*.xlsx",
+            Title = "Exportar Despeses a Excel",
+            FileName = $"Despeses_{DateTime.Now:yyyy-MM-dd}.xlsx"
+        };
+
+        if (saveFileDialog.ShowDialog() == true)
+        {
+            try
+            {
+                vm.ExportToExcel(saveFileDialog.FileName);
+                MessageBox.Show("Dades exportades correctament!", "Èxit", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al exportar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using FreelanceBookkeeper.Configuration;
+﻿using ClosedXML.Excel;
+using FreelanceBookkeeper.Configuration;
 using FreelanceBookkeeper.Data;
 using FreelanceBookkeeper.Models;
 using System;
@@ -166,6 +167,56 @@ namespace FreelanceBookkeeper.ViewModels
             }
 
             db.SaveChanges();
+        }
+
+        public void ExportToExcel(string filePath)
+        {
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Clients");
+
+            // Headers (same order as in DataGrid)
+            worksheet.Cell(1, 1).Value = "Nº Factura";
+            worksheet.Cell(1, 2).Value = "Nom";
+            worksheet.Cell(1, 3).Value = "Adreça";
+            worksheet.Cell(1, 4).Value = "Telèfon";
+            worksheet.Cell(1, 5).Value = "DNI/NIE";
+            worksheet.Cell(1, 6).Value = "Data";
+            worksheet.Cell(1, 7).Value = "Total";
+            worksheet.Cell(1, 8).Value = "Base Imponible";
+            worksheet.Cell(1, 9).Value = "Import IVA (21%)";
+
+            // Style headers
+            var headerRange = worksheet.Range(1, 1, 1, 9);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            // Data rows
+            int row = 2;
+            foreach (var transaction in CustomerTransactions)
+            {
+                worksheet.Cell(row, 1).Value = transaction.InvoiceNumber;
+                worksheet.Cell(row, 2).Value = transaction.Name;
+                worksheet.Cell(row, 3).Value = transaction.Address;
+                worksheet.Cell(row, 4).Value = transaction.PhoneNumber;
+                worksheet.Cell(row, 5).Value = transaction.Identification;
+                worksheet.Cell(row, 6).Value = transaction.InvoiceDate.ToString("dd/MM/yyyy");
+                worksheet.Cell(row, 7).Value = transaction.TotalAmount;
+                worksheet.Cell(row, 8).Value = transaction.BaseAmount;
+                worksheet.Cell(row, 9).Value = transaction.TaxAmount;
+
+                // Format currency columns
+                worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Cell(row, 9).Style.NumberFormat.Format = "#,##0.00";
+
+                row++;
+            }
+
+            // Auto-fit columns
+            worksheet.Columns().AdjustToContents();
+
+            workbook.SaveAs(filePath);
         }
     }
 }
