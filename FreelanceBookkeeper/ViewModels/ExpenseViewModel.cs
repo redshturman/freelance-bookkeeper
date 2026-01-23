@@ -147,6 +147,7 @@ public class ExpenseViewModel
                     entity.Description = exp.Description;
                     entity.TotalAmount = exp.TotalAmount;
                     entity.ExpenseDate = exp.ExpenseDate;
+                    entity.TaxPercentage = exp.TaxPercentage;
                 }
             }
         }

@@ -160,6 +160,7 @@ namespace FreelanceBookkeeper.ViewModels
                         entity.InvoiceNumber = cust.InvoiceNumber;
                         entity.TotalAmount = cust.TotalAmount;
                         entity.InvoiceDate = cust.InvoiceDate;
+                        entity.TaxPercentage = cust.TaxPercentage;
                     }
                 }
             }
