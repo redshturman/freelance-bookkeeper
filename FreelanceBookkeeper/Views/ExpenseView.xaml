@@ -8,8 +8,18 @@
     <Grid Margin="10">
         <StackPanel Margin="10">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <ComboBox Name="MonthGroupComboBox" Width="120" SelectionChanged="MonthGroupComboBox_SelectionChanged"/>
-                <ComboBox Name="YearComboBox" Width="80" SelectionChanged="YearComboBox_SelectionChanged"/>
+                <ComboBox x:Name="MonthGroupComboBox"
+                      Width="160"
+                      ItemsSource="{Binding MonthGroups}"
+                      DisplayMemberPath="Display"
+                      SelectedIndex="-1"
+                      SelectionChanged="MonthGroupComboBox_SelectionChanged"/>
+                <ComboBox
+                    x:Name="YearComboBox"
+                    Width="120"
+                    ItemsSource="{Binding Years}"
+                    SelectionChanged="YearComboBox_SelectionChanged"
+                    SelectedIndex="-1"/>
             </StackPanel>
                 <Button Content="Guardar" Width="100" Height="25" Click="SaveButton_Click" HorizontalAlignment="Left"/>
             <StackPanel>
