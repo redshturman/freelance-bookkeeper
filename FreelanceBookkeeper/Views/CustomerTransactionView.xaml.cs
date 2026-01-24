@@ -1,6 +1,7 @@
 ﻿using FreelanceBookkeeper.Data;
 using FreelanceBookkeeper.Models;
 using FreelanceBookkeeper.ViewModels;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -52,6 +53,7 @@ namespace FreelanceBookkeeper.Views
 
             vm.RefreshFilteredCustomerTransactions(year, group);
         }
+        
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.Tag is CustomerTransaction customerTransaction)
@@ -65,6 +67,29 @@ namespace FreelanceBookkeeper.Views
         {
             vm.SaveAll();
             MessageBox.Show("Cambios guardados en la base de datos");
+        }
+
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                Title = "Exportar Clients a Excel",
+                FileName = $"Clients_{DateTime.Now:yyyy-MM-dd}.xlsx"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    vm.ExportToExcel(saveFileDialog.FileName);
+                    MessageBox.Show("Dades exportades correctament!", "Èxit", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al exportar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }
