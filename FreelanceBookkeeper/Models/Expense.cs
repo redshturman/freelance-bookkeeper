@@ -12,6 +12,7 @@ namespace FreelanceBookkeeper.Models
     public class Expense : INotifyPropertyChanged
     {
         private decimal _totalAmount;
+        private DateOnly _expenseDate;
 
         /// <summary>
         /// Gets or sets the unique identifier for the expense.
@@ -46,7 +47,6 @@ namespace FreelanceBookkeeper.Models
                 if (_totalAmount != value)
                 {
                     _totalAmount = value;
-                    CalculateTaxAmounts();
                     OnPropertyChanged(nameof(TotalAmount));
                     OnPropertyChanged(nameof(BaseAmount));
                     OnPropertyChanged(nameof(TaxAmount));
@@ -57,7 +57,39 @@ namespace FreelanceBookkeeper.Models
         /// <summary>
         /// Gets or sets the date when the expense was incurred.
         /// </summary>
-        public DateOnly ExpenseDate { get; set; }
+        public DateOnly ExpenseDate
+        {
+            get => _expenseDate;
+            set
+            {
+                if (_expenseDate != value)
+                {
+                    _expenseDate = value;
+                    OnPropertyChanged(nameof(ExpenseDate));
+                    OnPropertyChanged(nameof(ExpenseDateAsDateTime));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Helper property for WPF DatePicker binding.
+        /// </summary>
+        [NotMapped]
+        public DateTime? ExpenseDateAsDateTime
+        {
+            get => ExpenseDate == default ? null : ExpenseDate.ToDateTime(TimeOnly.MinValue);
+            set
+            {
+                if (value.HasValue)
+                {
+                    ExpenseDate = DateOnly.FromDateTime(value.Value);
+                }
+                else
+                {
+                    ExpenseDate = DateOnly.FromDateTime(DateTime.Today);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the base amount without tax (IVA). Calculated automatically.
@@ -81,11 +113,6 @@ namespace FreelanceBookkeeper.Models
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void CalculateTaxAmounts()
-        {
-            // BaseAmount and TaxAmount are calculated properties, so no need to set them
         }
     }
 }

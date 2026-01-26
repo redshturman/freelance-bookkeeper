@@ -45,7 +45,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <DatePicker SelectedDate="{Binding InvoiceDate}" />
+                                <DatePicker SelectedDate="{Binding InvoiceDateAsDateTime, UpdateSourceTrigger=PropertyChanged}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
