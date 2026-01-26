@@ -1,0 +1,40 @@
+<Window x:Class="FreelanceBookkeeper.Views.EmailSendView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Enviar per Correu" Height="300" Width="400"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized">
+
+    <StackPanel Margin="20">
+        <TextBlock Text="Selecciona el periode a enviar:" FontWeight="Bold" Margin="0,0,0,15"/>
+
+        <TextBlock Text="Any:" Margin="0,0,0,5"/>
+        <ComboBox x:Name="YearComboBox"
+                  Width="120"
+                  HorizontalAlignment="Left"
+                  ItemsSource="{Binding Years}"
+                  SelectedIndex="0"
+                  Margin="0,0,0,15"/>
+
+        <TextBlock Text="Trimestre:" Margin="0,0,0,5"/>
+        <ComboBox x:Name="MonthGroupComboBox"
+                  Width="160"
+                  HorizontalAlignment="Left"
+                  ItemsSource="{Binding MonthGroups}"
+                  DisplayMemberPath="Display"
+                  SelectedIndex="0"
+                  Margin="0,0,0,20"/>
+
+        <TextBlock Text="Destinatari:" Margin="0,0,0,5"/>
+        <TextBox x:Name="EmailTextBox"
+                 Width="300"
+                 HorizontalAlignment="Left"
+                 Text="{Binding RecipientEmail}"
+                 Margin="0,0,0,20"/>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Enviar" Width="100" Height="30" Click="Send_Click" Margin="0,0,10,0"/>
+            <Button Content="Cancelar" Width="100" Height="30" Click="Cancel_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
