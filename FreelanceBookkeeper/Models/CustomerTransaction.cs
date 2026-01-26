@@ -12,6 +12,7 @@ namespace FreelanceBookkeeper.Models;
 public class CustomerTransaction : INotifyPropertyChanged
 {
     private decimal _totalAmount;
+    private DateOnly _invoiceDate;
 
     /// <summary>
     /// Gets or sets the unique identifier for the customer transaction.
@@ -66,7 +67,39 @@ public class CustomerTransaction : INotifyPropertyChanged
     /// <summary>
     /// Gets or sets the date when the invoice was issued.
     /// </summary>
-    public DateOnly InvoiceDate { get; set; }
+    public DateOnly InvoiceDate
+    {
+        get => _invoiceDate;
+        set
+        {
+            if (_invoiceDate != value)
+            {
+                _invoiceDate = value;
+                OnPropertyChanged(nameof(InvoiceDate));
+                OnPropertyChanged(nameof(InvoiceDateAsDateTime));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Helper property for WPF DatePicker binding.
+    /// </summary>
+    [NotMapped]
+    public DateTime? InvoiceDateAsDateTime
+    {
+        get => InvoiceDate == default ? null : InvoiceDate.ToDateTime(TimeOnly.MinValue);
+        set
+        {
+            if (value.HasValue)
+            {
+                InvoiceDate = DateOnly.FromDateTime(value.Value);
+            }
+            else
+            {
+                InvoiceDate = DateOnly.FromDateTime(DateTime.Today);
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the base amount without tax (IVA). Calculated automatically.

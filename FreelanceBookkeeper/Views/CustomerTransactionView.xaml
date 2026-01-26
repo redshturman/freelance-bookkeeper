@@ -21,9 +21,9 @@
                     SelectionChanged="YearComboBox_SelectionChanged"
                     SelectedIndex="-1"/>
             </StackPanel>
-            <Button Content="Guardar" Width="100" Height="25" Click="SaveButton_Click" HorizontalAlignment="Left"/>
-            <StackPanel>
-                
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Button Content="Guardar" Width="100" Height="25" Click="SaveButton_Click" HorizontalAlignment="Left" Margin="0,0,10,0"/>
+                <Button Content="Exportar a Excel" Width="120" Height="25" Click="ExportButton_Click" HorizontalAlignment="Left"/>
             </StackPanel>
             <DataGrid x:Name="CustomerTransactionDataGrid" 
                       ItemsSource="{Binding CustomerTransactions}"
@@ -45,7 +45,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <DatePicker SelectedDate="{Binding InvoiceDate}" />
+                                <DatePicker SelectedDate="{Binding InvoiceDateAsDateTime, UpdateSourceTrigger=PropertyChanged}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>

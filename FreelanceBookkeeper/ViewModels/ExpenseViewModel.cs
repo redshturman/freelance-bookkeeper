@@ -1,4 +1,5 @@
-﻿using FreelanceBookkeeper.Configuration;
+﻿using ClosedXML.Excel;
+using FreelanceBookkeeper.Configuration;
 using FreelanceBookkeeper.Data;
 using FreelanceBookkeeper.Models;
 using System.Collections.ObjectModel;
@@ -169,5 +170,51 @@ public class ExpenseViewModel
         }
 
         Expenses.Remove(expense);
+    }
+
+    public void ExportToExcel(string filePath)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Despeses");
+
+        // Headers (same order as in DataGrid)
+        worksheet.Cell(1, 1).Value = "Nom";
+        worksheet.Cell(1, 2).Value = "Concepte";
+        worksheet.Cell(1, 3).Value = "DNI/NIE";
+        worksheet.Cell(1, 4).Value = "Data";
+        worksheet.Cell(1, 5).Value = "Total";
+        worksheet.Cell(1, 6).Value = "Base Imponible";
+        worksheet.Cell(1, 7).Value = "Import IVA (21%)";
+
+        // Style headers
+        var headerRange = worksheet.Range(1, 1, 1, 7);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+        headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+        // Data rows
+        int row = 2;
+        foreach (var expense in Expenses)
+        {
+            worksheet.Cell(row, 1).Value = expense.SupplierName;
+            worksheet.Cell(row, 2).Value = expense.Description;
+            worksheet.Cell(row, 3).Value = expense.SupplierId;
+            worksheet.Cell(row, 4).Value = expense.ExpenseDate.ToString("dd/MM/yyyy");
+            worksheet.Cell(row, 5).Value = expense.TotalAmount;
+            worksheet.Cell(row, 6).Value = expense.BaseAmount;
+            worksheet.Cell(row, 7).Value = expense.TaxAmount;
+
+            // Format currency columns
+            worksheet.Cell(row, 5).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+
+            row++;
+        }
+
+        // Auto-fit columns
+        worksheet.Columns().AdjustToContents();
+
+        workbook.SaveAs(filePath);
     }
 }
