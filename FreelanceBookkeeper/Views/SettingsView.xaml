@@ -1,12 +1,39 @@
 ﻿<Window x:Class="FreelanceBookkeeper.Views.SettingsView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Configuración" Height="150" Width="300"
-        WindowStartupLocation="CenterScreen">
+        Title="Configuració"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized">
 
-    <StackPanel Margin="20" VerticalAlignment="Center">
-        <TextBlock Text="Mesos a mostrar:" Margin="0,0,0,10"/>
-        <TextBox Name="MonthsTextBox" Width="50"/>
-        <Button Content="Guardar" Width="100" Margin="0,20,0,0" Click="Save_Click"/>
-    </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="Configuració General" FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Mesos a mostrar:" Margin="0,0,0,5"/>
+            <TextBox Name="MonthsTextBox" Width="50" HorizontalAlignment="Left" Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Correu electrònic destinatari:" Margin="0,0,0,5"/>
+            <TextBox Name="EmailTextBox" Width="300" HorizontalAlignment="Left" Margin="0,0,0,20"/>
+            
+            <Separator Margin="0,10,0,20"/>
+            
+            <TextBlock Text="Configuració SMTP" FontWeight="Bold" FontSize="14" Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Servidor SMTP:" Margin="0,0,0,5"/>
+            <TextBox Name="SmtpServerTextBox" Width="300" HorizontalAlignment="Left" Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Port SMTP:" Margin="0,0,0,5"/>
+            <TextBox Name="SmtpPortTextBox" Width="100" HorizontalAlignment="Left" Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Nom d'usuari SMTP:" Margin="0,0,0,5"/>
+            <TextBox Name="SmtpUsernameTextBox" Width="300" HorizontalAlignment="Left" Margin="0,0,0,15"/>
+            
+            <TextBlock Text="Contrasenya SMTP:" Margin="0,0,0,5"/>
+            <PasswordBox Name="SmtpPasswordBox" Width="300" HorizontalAlignment="Left" Margin="0,0,0,15"/>
+            
+            <CheckBox Name="SmtpUseSslCheckBox" Content="Utilitzar SSL/TLS" Margin="0,0,0,20"/>
+            
+            <Button Content="Guardar" Width="100" HorizontalAlignment="Left" Click="Save_Click"/>
+        </StackPanel>
+    </ScrollViewer>
 </Window>

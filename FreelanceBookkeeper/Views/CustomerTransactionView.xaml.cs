@@ -91,5 +91,28 @@ namespace FreelanceBookkeeper.Views
                 }
             }
         }
+
+        private async void SendEmailButton_Click(object sender, RoutedEventArgs e)
+        {
+            var emailDialog = new EmailSendView(vm.Years, vm.MonthGroups);
+            emailDialog.ShowDialog();
+
+            if (emailDialog.WasSent)
+            {
+                try
+                {
+                    await vm.SendEmailWithExcel(
+                        emailDialog.FinalRecipientEmail,
+                        emailDialog.SelectedYear,
+                        emailDialog.SelectedMonthGroup);
+
+                    MessageBox.Show("Correu enviat correctament!", "Èxit", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error a l'enviar el correu: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
 }

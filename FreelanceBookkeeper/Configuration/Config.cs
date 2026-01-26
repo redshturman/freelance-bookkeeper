@@ -17,6 +17,15 @@ namespace FreelanceBookkeeper.Configuration
             "config.json");
 
         public int MonthsToShow { get; set; } = 3;
+        
+        public string Email { get; set; } = string.Empty;
+        
+        // SMTP Configuration
+        public string SmtpServer { get; set; } = string.Empty;
+        public int SmtpPort { get; set; } = 587;
+        public string SmtpUsername { get; set; } = string.Empty;
+        public string SmtpPassword { get; set; } = string.Empty;
+        public bool SmtpUseSsl { get; set; } = true;
 
         // Guardar configuración
         public void Save()
@@ -34,6 +43,5 @@ namespace FreelanceBookkeeper.Configuration
             var json = File.ReadAllText(ConfigPath);
             return JsonSerializer.Deserialize<Config>(json) ?? new Config();
         }
-
     }
 }

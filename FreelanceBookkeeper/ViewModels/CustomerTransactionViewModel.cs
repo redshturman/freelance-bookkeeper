@@ -2,10 +2,16 @@
 using FreelanceBookkeeper.Configuration;
 using FreelanceBookkeeper.Data;
 using FreelanceBookkeeper.Models;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FreelanceBookkeeper.ViewModels
 {
@@ -58,7 +64,7 @@ namespace FreelanceBookkeeper.ViewModels
             var list = db.CustomerTransactions.OrderByDescending(e => e.InvoiceDate).ToList();
             CustomerTransactions.Clear();
             foreach (var e in list)
-               CustomerTransactions.Add(e);
+                CustomerTransactions.Add(e);
         }
 
         private void LoadYears()
@@ -174,16 +180,16 @@ namespace FreelanceBookkeeper.ViewModels
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Clients");
 
-            // Headers (same order as in DataGrid)
+            // Headers (matching DataGrid column order)
             worksheet.Cell(1, 1).Value = "Nº Factura";
-            worksheet.Cell(1, 2).Value = "Nom";
-            worksheet.Cell(1, 3).Value = "Adreça";
-            worksheet.Cell(1, 4).Value = "Telèfon";
-            worksheet.Cell(1, 5).Value = "DNI/NIE";
-            worksheet.Cell(1, 6).Value = "Data";
-            worksheet.Cell(1, 7).Value = "Total";
-            worksheet.Cell(1, 8).Value = "Base Imponible";
-            worksheet.Cell(1, 9).Value = "Import IVA (21%)";
+            worksheet.Cell(1, 2).Value = "Data";
+            worksheet.Cell(1, 3).Value = "Nom";
+            worksheet.Cell(1, 4).Value = "Adreça";
+            worksheet.Cell(1, 5).Value = "Telèfon";
+            worksheet.Cell(1, 6).Value = "DNI/NIE";
+            worksheet.Cell(1, 7).Value = "Base Imponible";
+            worksheet.Cell(1, 8).Value = "Import IVA (21%)";
+            worksheet.Cell(1, 9).Value = "Total";
 
             // Style headers
             var headerRange = worksheet.Range(1, 1, 1, 9);
@@ -217,6 +223,97 @@ namespace FreelanceBookkeeper.ViewModels
             worksheet.Columns().AdjustToContents();
 
             workbook.SaveAs(filePath);
+        }
+
+        public async Task SendEmailWithExcel(string recipientEmail, int? year = null, int? monthGroup = null)
+        {
+            // Load filtered data
+            using var db = new AppDbContext();
+            var query = db.CustomerTransactions.AsQueryable();
+
+            if (year.HasValue)
+                query = query.Where(e => e.InvoiceDate.Year == year.Value);
+
+            if (monthGroup.HasValue)
+            {
+                int monthsToShow = config.MonthsToShow;
+                int startMonth = 1 + (monthGroup.Value - 1) * monthsToShow;
+                int endMonth = startMonth + monthsToShow - 1;
+                query = query.Where(e => e.InvoiceDate.Month >= startMonth && e.InvoiceDate.Month <= endMonth);
+            }
+
+            var transactions = query.OrderByDescending(e => e.InvoiceDate).ToList();
+
+            // Generate Excel in memory
+            using var memoryStream = new MemoryStream();
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Clients");
+
+                // Headers
+                worksheet.Cell(1, 1).Value = "Nº Factura";
+                worksheet.Cell(1, 2).Value = "Nom";
+                worksheet.Cell(1, 3).Value = "Adreça";
+                worksheet.Cell(1, 4).Value = "Telèfon";
+                worksheet.Cell(1, 5).Value = "DNI/NIE";
+                worksheet.Cell(1, 6).Value = "Data";
+                worksheet.Cell(1, 7).Value = "Total";
+                worksheet.Cell(1, 8).Value = "Base Imponible";
+                worksheet.Cell(1, 9).Value = "Import IVA (21%)";
+
+                var headerRange = worksheet.Range(1, 1, 1, 9);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                // Data rows
+                int row = 2;
+                foreach (var transaction in transactions)
+                {
+                    worksheet.Cell(row, 1).Value = transaction.InvoiceNumber;
+                    worksheet.Cell(row, 2).Value = transaction.InvoiceDate.ToString("dd/MM/yyyy");
+                    worksheet.Cell(row, 3).Value = transaction.Name;
+                    worksheet.Cell(row, 4).Value = transaction.Address;
+                    worksheet.Cell(row, 5).Value = transaction.PhoneNumber;
+                    worksheet.Cell(row, 6).Value = transaction.Identification;
+                    worksheet.Cell(row, 7).Value = transaction.BaseAmount;
+                    worksheet.Cell(row, 8).Value = transaction.TaxAmount;
+                    worksheet.Cell(row, 9).Value = transaction.TotalAmount;
+
+                    worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+                    worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00";
+                    worksheet.Cell(row, 9).Style.NumberFormat.Format = "#,##0.00";
+
+                    row++;
+                }
+
+                worksheet.Columns().AdjustToContents();
+                workbook.SaveAs(memoryStream);
+            }
+
+            memoryStream.Position = 0;
+
+            // Create email
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Francesc Xavier Jové Pérez", config.SmtpUsername));
+            message.To.Add(new MailboxAddress("", recipientEmail));
+            message.Subject = $"Clients Xavi Jové - {DateTime.Now:dd/MM/yyyy}";
+
+            var builder = new BodyBuilder
+            {
+                TextBody = $"Hola,\n\nAdjunt trobaràs l'informe de clients.\nAny: {year?.ToString() ?? "Tots"}\nTrimestre: {(monthGroup.HasValue ? $"Mesos {(monthGroup.Value - 1) * config.MonthsToShow + 1}-{monthGroup.Value * config.MonthsToShow}" : "Tots")}\n\n Gràcies,\n Francesc Xavier Jové Pérez."
+            };
+
+            builder.Attachments.Add($"Clients_{DateTime.Now:yyyy-MM-dd}.xlsx", memoryStream.ToArray(), new ContentType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+
+            message.Body = builder.ToMessageBody();
+
+            // Send email
+            using var client = new SmtpClient();
+            await client.ConnectAsync(config.SmtpServer, config.SmtpPort, config.SmtpUseSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+            await client.AuthenticateAsync(config.SmtpUsername, config.SmtpPassword);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
         }
     }
 }
