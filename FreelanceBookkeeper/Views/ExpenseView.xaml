@@ -62,9 +62,15 @@
                 <DataGridTemplateColumn Header="Accions">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Borrar"
-                                Click="DeleteButton_Click" 
-                                Tag="{Binding}" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Duplicar"
+                                        Click="DuplicateButton_Click" 
+                                        Tag="{Binding}"
+                                        Margin="0,0,5,0" />
+                                <Button Content="Borrar"
+                                        Click="DeleteButton_Click" 
+                                        Tag="{Binding}" />
+                            </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

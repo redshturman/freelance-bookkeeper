@@ -176,6 +176,22 @@ public class ExpenseViewModel
         Expenses.Remove(expense);
     }
 
+    public void DuplicateExpense(Expense expense)
+    {
+        var duplicated = new Expense
+        {
+            SupplierName = expense.SupplierName,
+            SupplierId = expense.SupplierId,
+            Description = expense.Description,
+            TotalAmount = expense.TotalAmount,
+            ExpenseDate = expense.ExpenseDate,
+            TaxPercentage = expense.TaxPercentage
+            // Id is 0 by default for new entities
+        };
+
+        Expenses.Add(duplicated);
+    }
+
     public void ExportToExcel(string filePath)
     {
         using var workbook = new XLWorkbook();

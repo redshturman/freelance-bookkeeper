@@ -53,6 +53,14 @@ namespace FreelanceBookkeeper.Views
 
             vm.RefreshFilteredCustomerTransactions(year, group);
         }
+
+        private void DuplicateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is CustomerTransaction transaction)
+            {
+                vm.DuplicateCustomerTransaction(transaction);
+            }
+        }
         
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {

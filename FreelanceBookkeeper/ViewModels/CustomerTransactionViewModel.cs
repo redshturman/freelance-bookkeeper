@@ -315,5 +315,23 @@ namespace FreelanceBookkeeper.ViewModels
             await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }
+
+        public void DuplicateCustomerTransaction(CustomerTransaction transaction)
+        {
+            var duplicated = new CustomerTransaction
+            {
+                Name = transaction.Name,
+                Identification = transaction.Identification,
+                Address = transaction.Address,
+                PhoneNumber = transaction.PhoneNumber,
+                InvoiceNumber = transaction.InvoiceNumber,
+                TotalAmount = transaction.TotalAmount,
+                InvoiceDate = transaction.InvoiceDate,
+                TaxPercentage = transaction.TaxPercentage
+                // Id is 0 by default for new entities
+            };
+
+            CustomerTransactions.Add(duplicated);
+        }
     }
 }

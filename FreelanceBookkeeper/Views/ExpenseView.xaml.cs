@@ -45,6 +45,14 @@ public partial class ExpenseView : Window
         vm.RefreshFilteredExpenses(year, group);
     }
 
+    private void DuplicateButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is Expense expense)
+        {
+            vm.DuplicateExpense(expense);
+        }
+    }
+
     private void DeleteButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is Expense expense)
