@@ -8,6 +8,7 @@ using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,10 +16,16 @@ using System.Threading.Tasks;
 
 namespace FreelanceBookkeeper.ViewModels
 {
-    class CustomerTransactionViewModel
+    class CustomerTransactionViewModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public ObservableCollection<CustomerTransaction> CustomerTransactions { get; set; } = new();
         public ObservableCollection<int> Years { get; } = new();
+
+        public decimal TotalBaseAmount => CustomerTransactions.Sum(t => t.BaseAmount);
+        public decimal TotalTaxAmount => CustomerTransactions.Sum(t => t.TaxAmount);
+        public decimal TotalAmount => CustomerTransactions.Sum(t => t.TotalAmount);
 
         public Config config = Config.Load();
         private List<CustomerTransaction> allTransactions = new();
@@ -56,6 +63,14 @@ namespace FreelanceBookkeeper.ViewModels
             config = Config.Load();
             LoadInvoices();
             LoadYears();
+            CustomerTransactions.CollectionChanged += (s, e) => OnTotalsChanged();
+        }
+
+        private void OnTotalsChanged()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalBaseAmount)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalTaxAmount)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalAmount)));
         }
 
         private void LoadInvoices()
@@ -103,6 +118,8 @@ namespace FreelanceBookkeeper.ViewModels
             CustomerTransactions.Clear();
             foreach (var e in list)
                 CustomerTransactions.Add(e);
+
+            OnTotalsChanged();
         }
 
         public IEnumerable<int> AllYears()
@@ -145,6 +162,8 @@ namespace FreelanceBookkeeper.ViewModels
             CustomerTransactions.Clear();
             foreach (var e in list)
                 CustomerTransactions.Add(e);
+
+            OnTotalsChanged();
         }
 
         public void SaveAll()
@@ -219,6 +238,26 @@ namespace FreelanceBookkeeper.ViewModels
                 row++;
             }
 
+            // Add totals row
+            worksheet.Cell(row, 6).Value = "TOTALS:";
+            worksheet.Cell(row, 6).Style.Font.Bold = true;
+            worksheet.Cell(row, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+            worksheet.Cell(row, 7).Value = TotalAmount;
+            worksheet.Cell(row, 7).Style.Font.Bold = true;
+            worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 7).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+            worksheet.Cell(row, 8).Value = TotalBaseAmount;
+            worksheet.Cell(row, 8).Style.Font.Bold = true;
+            worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 8).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+            worksheet.Cell(row, 9).Value = TotalTaxAmount;
+            worksheet.Cell(row, 9).Style.Font.Bold = true;
+            worksheet.Cell(row, 9).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 9).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
             // Auto-fit columns
             worksheet.Columns().AdjustToContents();
 
@@ -286,6 +325,30 @@ namespace FreelanceBookkeeper.ViewModels
 
                     row++;
                 }
+
+                // Add totals row
+                decimal totalBase = transactions.Sum(t => t.BaseAmount);
+                decimal totalTax = transactions.Sum(t => t.TaxAmount);
+                decimal total = transactions.Sum(t => t.TotalAmount);
+
+                worksheet.Cell(row, 6).Value = "TOTALS:";
+                worksheet.Cell(row, 6).Style.Font.Bold = true;
+                worksheet.Cell(row, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+                worksheet.Cell(row, 7).Value = totalBase;
+                worksheet.Cell(row, 7).Style.Font.Bold = true;
+                worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Cell(row, 7).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+                worksheet.Cell(row, 8).Value = totalTax;
+                worksheet.Cell(row, 8).Style.Font.Bold = true;
+                worksheet.Cell(row, 8).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Cell(row, 8).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+                worksheet.Cell(row, 9).Value = total;
+                worksheet.Cell(row, 9).Style.Font.Bold = true;
+                worksheet.Cell(row, 9).Style.NumberFormat.Format = "#,##0.00";
+                worksheet.Cell(row, 9).Style.Fill.BackgroundColor = XLColor.LightYellow;
 
                 worksheet.Columns().AdjustToContents();
                 workbook.SaveAs(memoryStream);

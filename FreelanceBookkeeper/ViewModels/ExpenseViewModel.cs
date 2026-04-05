@@ -7,15 +7,22 @@ using MailKit.Security;
 using MimeKit;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 
 namespace FreelanceBookkeeper.ViewModels;
 
-public class ExpenseViewModel
+public class ExpenseViewModel : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     public ObservableCollection<Expense> Expenses { get; set; } = new();
     public ObservableCollection<int> Years { get; } = new();
     public Config config = Config.Load();
+
+    public decimal TotalBaseAmount => Expenses.Sum(e => e.BaseAmount);
+    public decimal TotalTaxAmount => Expenses.Sum(e => e.TaxAmount);
+    public decimal TotalAmount => Expenses.Sum(e => e.TotalAmount);
     public List<MonthGroup> MonthGroups
     {
         get
@@ -50,6 +57,14 @@ public class ExpenseViewModel
         config = Config.Load();
         LoadExpenses();
         LoadYears();
+        Expenses.CollectionChanged += (s, e) => OnTotalsChanged();
+    }
+
+    private void OnTotalsChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalBaseAmount)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalTaxAmount)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalAmount)));
     }
 
     private void LoadExpenses()
@@ -103,6 +118,8 @@ public class ExpenseViewModel
         Expenses.Clear();
         foreach (var e in list)
             Expenses.Add(e);
+
+        OnTotalsChanged();
     }
 
     public IEnumerable<int> AllYears()
@@ -132,6 +149,8 @@ public class ExpenseViewModel
         Expenses.Clear();
         foreach (var e in list)
             Expenses.Add(e);
+
+        OnTotalsChanged();
     }
 
     public void SaveAll()
@@ -232,6 +251,26 @@ public class ExpenseViewModel
             row++;
         }
 
+        // Add totals row
+        worksheet.Cell(row, 4).Value = "TOTALS:";
+        worksheet.Cell(row, 4).Style.Font.Bold = true;
+        worksheet.Cell(row, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+        worksheet.Cell(row, 5).Value = TotalBaseAmount;
+        worksheet.Cell(row, 5).Style.Font.Bold = true;
+        worksheet.Cell(row, 5).Style.NumberFormat.Format = "#,##0.00";
+        worksheet.Cell(row, 5).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+        worksheet.Cell(row, 6).Value = TotalTaxAmount;
+        worksheet.Cell(row, 6).Style.Font.Bold = true;
+        worksheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0.00";
+        worksheet.Cell(row, 6).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+        worksheet.Cell(row, 7).Value = TotalAmount;
+        worksheet.Cell(row, 7).Style.Font.Bold = true;
+        worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+        worksheet.Cell(row, 7).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
 
@@ -298,6 +337,30 @@ public class ExpenseViewModel
 
                 row++;
             }
+
+            // Add totals row
+            decimal totalBase = expenses.Sum(e => e.BaseAmount);
+            decimal totalTax = expenses.Sum(e => e.TaxAmount);
+            decimal total = expenses.Sum(e => e.TotalAmount);
+
+            worksheet.Cell(row, 4).Value = "TOTALS:";
+            worksheet.Cell(row, 4).Style.Font.Bold = true;
+            worksheet.Cell(row, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+            worksheet.Cell(row, 5).Value = totalBase;
+            worksheet.Cell(row, 5).Style.Font.Bold = true;
+            worksheet.Cell(row, 5).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 5).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+            worksheet.Cell(row, 6).Value = totalTax;
+            worksheet.Cell(row, 6).Style.Font.Bold = true;
+            worksheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 6).Style.Fill.BackgroundColor = XLColor.LightYellow;
+
+            worksheet.Cell(row, 7).Value = total;
+            worksheet.Cell(row, 7).Style.Font.Bold = true;
+            worksheet.Cell(row, 7).Style.NumberFormat.Format = "#,##0.00";
+            worksheet.Cell(row, 7).Style.Fill.BackgroundColor = XLColor.LightYellow;
 
             worksheet.Columns().AdjustToContents();
             workbook.SaveAs(memoryStream);

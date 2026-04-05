@@ -28,9 +28,34 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="Guardar" Width="100" Height="25" Click="SaveButton_Click" HorizontalAlignment="Left" Margin="0,0,10,0"/>
-            <Button Content="Exportar a Excel" Width="120" Height="25" Click="ExportButton_Click" HorizontalAlignment="Left" Margin="0,0,10,0"/>
-            <Button Content="Enviar per Correu" Width="130" Height="25" Click="SendEmailButton_Click" HorizontalAlignment="Left"/>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Guardar" Width="100" Height="25" Click="SaveButton_Click" HorizontalAlignment="Left" Margin="0,0,10,0"/>
+                <Button Content="Exportar a Excel" Width="120" Height="25" Click="ExportButton_Click" HorizontalAlignment="Left" Margin="0,0,10,0"/>
+                <Button Content="Enviar per Correu" Width="130" Height="25" Click="SendEmailButton_Click" HorizontalAlignment="Left"/>
+            </StackPanel>
+
+            <Border BorderBrush="Gray" BorderThickness="1" Padding="10" Margin="20,0,0,0" CornerRadius="3">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Base Imponible:" FontWeight="SemiBold" Margin="0,0,10,5"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding TotalBaseAmount, StringFormat={}{0:N2} €}" HorizontalAlignment="Right" Margin="0,0,0,5"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total IVA (21%):" FontWeight="SemiBold" Margin="0,0,10,5"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalTaxAmount, StringFormat={}{0:N2} €}" HorizontalAlignment="Right" Margin="0,0,0,5"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Total:" FontWeight="Bold" Margin="0,0,10,0"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalAmount, StringFormat={}{0:N2} €}" FontWeight="Bold" HorizontalAlignment="Right"/>
+                </Grid>
+            </Border>
         </StackPanel>
 
         <DataGrid Grid.Row="2"
