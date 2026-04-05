@@ -7,15 +7,22 @@ using MailKit.Security;
 using MimeKit;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 
 namespace FreelanceBookkeeper.ViewModels;
 
-public class ExpenseViewModel
+public class ExpenseViewModel : INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     public ObservableCollection<Expense> Expenses { get; set; } = new();
     public ObservableCollection<int> Years { get; } = new();
     public Config config = Config.Load();
+
+    public decimal TotalBaseAmount => Expenses.Sum(e => e.BaseAmount);
+    public decimal TotalTaxAmount => Expenses.Sum(e => e.TaxAmount);
+    public decimal TotalAmount => Expenses.Sum(e => e.TotalAmount);
     public List<MonthGroup> MonthGroups
     {
         get
@@ -50,6 +57,14 @@ public class ExpenseViewModel
         config = Config.Load();
         LoadExpenses();
         LoadYears();
+        Expenses.CollectionChanged += (s, e) => OnTotalsChanged();
+    }
+
+    private void OnTotalsChanged()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalBaseAmount)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalTaxAmount)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalAmount)));
     }
 
     private void LoadExpenses()
@@ -103,6 +118,8 @@ public class ExpenseViewModel
         Expenses.Clear();
         foreach (var e in list)
             Expenses.Add(e);
+
+        OnTotalsChanged();
     }
 
     public IEnumerable<int> AllYears()
@@ -132,6 +149,8 @@ public class ExpenseViewModel
         Expenses.Clear();
         foreach (var e in list)
             Expenses.Add(e);
+
+        OnTotalsChanged();
     }
 
     public void SaveAll()

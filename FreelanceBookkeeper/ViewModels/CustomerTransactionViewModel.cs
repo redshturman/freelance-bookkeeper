@@ -8,6 +8,7 @@ using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,10 +16,16 @@ using System.Threading.Tasks;
 
 namespace FreelanceBookkeeper.ViewModels
 {
-    class CustomerTransactionViewModel
+    class CustomerTransactionViewModel : INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public ObservableCollection<CustomerTransaction> CustomerTransactions { get; set; } = new();
         public ObservableCollection<int> Years { get; } = new();
+
+        public decimal TotalBaseAmount => CustomerTransactions.Sum(t => t.BaseAmount);
+        public decimal TotalTaxAmount => CustomerTransactions.Sum(t => t.TaxAmount);
+        public decimal TotalAmount => CustomerTransactions.Sum(t => t.TotalAmount);
 
         public Config config = Config.Load();
         private List<CustomerTransaction> allTransactions = new();
@@ -56,6 +63,14 @@ namespace FreelanceBookkeeper.ViewModels
             config = Config.Load();
             LoadInvoices();
             LoadYears();
+            CustomerTransactions.CollectionChanged += (s, e) => OnTotalsChanged();
+        }
+
+        private void OnTotalsChanged()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalBaseAmount)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalTaxAmount)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TotalAmount)));
         }
 
         private void LoadInvoices()
@@ -103,6 +118,8 @@ namespace FreelanceBookkeeper.ViewModels
             CustomerTransactions.Clear();
             foreach (var e in list)
                 CustomerTransactions.Add(e);
+
+            OnTotalsChanged();
         }
 
         public IEnumerable<int> AllYears()
@@ -145,6 +162,8 @@ namespace FreelanceBookkeeper.ViewModels
             CustomerTransactions.Clear();
             foreach (var e in list)
                 CustomerTransactions.Add(e);
+
+            OnTotalsChanged();
         }
 
         public void SaveAll()
